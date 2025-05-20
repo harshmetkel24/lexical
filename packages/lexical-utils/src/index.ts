@@ -687,7 +687,7 @@ export function $insertFirst(parent: ElementNode, node: LexicalNode): void {
 }
 
 let NEEDS_MANUAL_ZOOM = IS_FIREFOX || !CAN_USE_DOM ? false : undefined;
-function needsManualZoom(): boolean {
+function needsManualZoom(element: Element | null): boolean {
   if (NEEDS_MANUAL_ZOOM === undefined) {
     // If the browser implements standardized CSS zoom, then the client rect
     // will be wider after zoom is applied
@@ -696,11 +696,11 @@ function needsManualZoom(): boolean {
     const div = document.createElement('div');
     div.style.cssText =
       'position: absolute; opacity: 0; width: 100px; left: -1000px;';
-    document.body.appendChild(div);
+    (element || document.body).appendChild(div);
     const noZoom = div.getBoundingClientRect();
     div.style.setProperty('zoom', '2');
     NEEDS_MANUAL_ZOOM = div.getBoundingClientRect().width === noZoom.width;
-    document.body.removeChild(div);
+    (element || document.body).removeChild(div);
   }
   return NEEDS_MANUAL_ZOOM;
 }
@@ -713,7 +713,7 @@ function needsManualZoom(): boolean {
  */
 export function calculateZoomLevel(element: Element | null): number {
   let zoom = 1;
-  if (needsManualZoom()) {
+  if (needsManualZoom(element)) {
     while (element) {
       zoom *= Number(window.getComputedStyle(element).getPropertyValue('zoom'));
       element = element.parentElement;
